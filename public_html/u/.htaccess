@@ -1,0 +1,6 @@
+# PONNU — u/.htaccess
+# /u/{username} → /u/?username={username}
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9_]+)/?$ index.php?username=$1 [L,QSA]

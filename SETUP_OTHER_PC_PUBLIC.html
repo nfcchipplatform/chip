@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>PONNU プロジェクト 他PCセットアップ手順書</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif; line-height: 1.75; max-width: 880px; margin: 0 auto; padding: 40px 28px 80px; color: #1f2937; background: #fafafa; }
+  h1 { font-size: 28px; border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-top: 0; }
+  h2 { font-size: 22px; margin-top: 48px; padding: 10px 14px; background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%); color: #fff; border-radius: 6px; }
+  h3 { font-size: 17px; margin-top: 28px; color: #1e3a8a; border-left: 4px solid #2563eb; padding-left: 10px; }
+  code { background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; font-family: Consolas, "Courier New", monospace; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-family: Consolas, "Courier New", monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  .flow { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px; text-align: center; font-family: Consolas, monospace; white-space: pre; font-size: 14px; margin: 16px 0; }
+  .note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
+  .danger { background: #fee2e2; border-left: 4px solid #dc2626; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
+  .ok { background: #d1fae5; border-left: 4px solid #059669; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; background: #fff; }
+  th, td { border: 1px solid #d1d5db; padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; color: #1e3a8a; }
+  ol li, ul li { margin: 6px 0; }
+  hr { border: none; border-top: 1px dashed #cbd5e1; margin: 32px 0; }
+  .meta { color: #6b7280; font-size: 13px; margin-bottom: 24px; }
+  kbd { background: #f3f4f6; border: 1px solid #d1d5db; border-bottom-width: 2px; border-radius: 4px; padding: 2px 6px; font-size: 0.88em; font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<h1>PONNU プロジェクト 他PCセットアップ手順書</h1>
+<p class="meta">対象: <code>nfcchipplatform/ponnu</code> リポジトリ &nbsp;|&nbsp; 公開URL: <code>https://ic.ponnu.net/</code></p>
+
+<div class="danger">
+<b>機密情報の取り扱いについて</b><br>
+本書には FTP / DB パスワード等の機密情報は <b>一切記載していません</b>。
+パスワード類はすべて <b>パスワードマネージャ（1Password / Bitwarden 等）または暗号化チャット</b> 経由で別途共有してください。
+GitHub / メール / Slack 公開チャンネル等にパスワードを貼り付けることは絶対に禁止です。
+</div>
+
+<h2>全体の流れ</h2>
+<div class="flow">[メインPC] ──push──▶ [GitHub: Private] ──clone──▶ [他PC]
+                                          + 機密ファイルは別経路で受け渡し</div>
+
+<hr>
+
+<h2>フェーズA: メインPCで1回だけやること（GitHub準備）</h2>
+
+<h3>A-1. GitHubリポジトリを作成（手動・ブラウザ操作）</h3>
+<ol>
+  <li>ブラウザで <code>https://github.com/new</code> を開く</li>
+  <li>以下を入力:
+    <ul>
+      <li><b>Owner</b>: <code>nfcchipplatform</code></li>
+      <li><b>Repository name</b>: <code>ponnu</code></li>
+      <li><b>Private</b> を選択（必須）</li>
+      <li>README / .gitignore / license は <b>全部チェックなし</b></li>
+    </ul>
+  </li>
+  <li>「Create repository」をクリック</li>
+</ol>
+
+<h3>A-2. 機密の安全化と初回push（自動実行）</h3>
+<p>下記の機密情報を含むファイルは <code>.gitignore</code> で除外され、GitHubには上がりません:</p>
+<ul>
+  <li><code>app/config.php</code> （DB接続情報・APP_SECRET）</li>
+  <li><code>deploy.ps1</code> （FTPパスワード）</li>
+  <li><code>SETUP_OTHER_PC.html</code> （旧ローカルメモ）</li>
+</ul>
+<p>代わりに以下のテンプレートのみが共有されます:</p>
+<ul>
+  <li><code>app/config.example.php</code> （プレースホルダのみ）</li>
+  <li><code>deploy.ps1.example</code> （<code>&lt;YOUR_FTP_PASSWORD&gt;</code> プレースホルダ）</li>
+</ul>
+
+<hr>
+
+<h2>フェーズB: 他PCで1回だけやること</h2>
+
+<h3>B-1. Git for Windows をインストール</h3>
+<ol>
+  <li><code>https://git-scm.com/download/win</code> から「64-bit Git for Windows Setup」をDL</li>
+  <li>インストーラーを実行（<b>すべてデフォルトで「Next」連打でOK</b>）</li>
+  <li>PowerShellを開いて確認:
+<pre><code>git --version</code></pre>
+    → <code>git version 2.xx.x</code> と出ればOK
+  </li>
+</ol>
+
+<h3>B-2. GitHubアカウントでログイン</h3>
+<ol>
+  <li>ブラウザで <code>https://github.com/login</code> にアクセスして <code>nfcchipplatform</code> でログイン</li>
+  <li><code>git clone</code> 実行時、自動で「Sign in with your browser」のポップアップが出る → 承認</li>
+</ol>
+
+<h3>B-3. プロジェクトをダウンロード</h3>
+<pre><code># (1) 作業フォルダを作る
+mkdir C:\projects
+cd C:\projects
+
+# (2) GitHubから取得
+git clone https://github.com/nfcchipplatform/ponnu.git
+
+# (3) プロジェクトフォルダに移動
+cd ponnu</code></pre>
+
+<h3>B-4. 機密ファイルの復元（GitHubには上がっていない）</h3>
+<div class="note">下記ファイルは <b>パスワードマネージャ等から個別に取得</b> してください。Git管理されていません。</div>
+
+<table>
+  <tr><th>ファイル</th><th>取得・配置方法</th></tr>
+  <tr>
+    <td><code>app/config.php</code></td>
+    <td>
+      (1) テンプレートをコピー:
+      <pre><code>copy app\config.example.php app\config.php</code></pre>
+      (2) <code>notepad app\config.php</code> で開き、以下の値をパスワードマネージャから貼り付け:
+      <ul>
+        <li><code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASS</code></li>
+        <li><code>APP_URL</code>, <code>APP_SECRET</code></li>
+        <li><code>UPLOAD_DIR</code> （他PCの絶対パスに合わせる）</li>
+        <li>メール送信を使う場合は <code>MAIL_*</code></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td><code>deploy.ps1</code></td>
+    <td>
+      (1) テンプレートをコピー:
+      <pre><code>copy deploy.ps1.example deploy.ps1</code></pre>
+      (2) <code>notepad deploy.ps1</code> で開き、<code>&lt;YOUR_FTP_PASSWORD&gt;</code> をパスワードマネージャから取得した実際のパスワードに置換<br>
+      (3) <code>$localBase</code> を他PCの絶対パスに変更
+    </td>
+  </tr>
+</table>
+
+<h3>B-5. 動作確認</h3>
+<pre><code>git status</code></pre>
+<p>→ <code>nothing to commit, working tree clean</code> と出ればOK（gitignore対象は表示されない）</p>
+
+<hr>
+
+<h2>フェーズC: 以降の日々の作業（両PC共通）</h2>
+
+<h3>作業を始める前（毎回）</h3>
+<pre><code>cd C:\projects\ponnu
+git pull</code></pre>
+
+<h3>作業が終わったら（毎回）</h3>
+<pre><code>git add .
+git commit -m "何をしたか日本語でOK"
+git push</code></pre>
+
+<h3>本番に反映したいとき</h3>
+<pre><code>.\deploy.ps1</code></pre>
+
+<hr>
+
+<h2>セキュリティチェックリスト</h2>
+<ul>
+  <li>✅ GitHubリポジトリは Private になっているか</li>
+  <li>✅ <code>app/config.php</code> はGit追跡対象外か（<code>git status</code>に出ないこと）</li>
+  <li>✅ <code>deploy.ps1</code> はGit追跡対象外か</li>
+  <li>✅ パスワードはパスワードマネージャに保管されているか</li>
+  <li>✅ コミットする前に <code>git diff --cached</code> でパスワードらしき文字列が混ざっていないか確認</li>
+</ul>
+
+<div class="danger">
+<b>万が一パスワードをコミット/push してしまったら:</b><br>
+即座に該当パスワードを変更（DB / FTP / GitHub PAT 等）してください。<br>
+GitHub履歴からの完全削除は <code>git filter-repo</code> や BFG Repo-Cleaner が必要ですが、<b>「漏洩したパスワードはもう使わない」のが一番確実です。</b>
+</div>
+
+<hr>
+
+<h2>よくあるトラブル</h2>
+<table>
+  <tr><th>症状</th><th>対処</th></tr>
+  <tr><td><code>git push</code> で「rejected」</td><td>もう一方のPCで先にpushされている。<code>git pull --rebase</code> してから再 <code>git push</code></td></tr>
+  <tr><td>画面が真っ白</td><td><code>app/config.php</code> がない。フェーズB-4を再確認</td></tr>
+  <tr><td><code>.\deploy.ps1</code> で認証エラー</td><td><code>deploy.ps1</code> のFTPパスワードがプレースホルダのまま。メモ帳で確認</td></tr>
+  <tr><td><code>.\deploy.ps1</code> が「実行できない」エラー</td><td>管理者PowerShellで <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> を1回実行</td></tr>
+</table>
+
+</body>
+</html>

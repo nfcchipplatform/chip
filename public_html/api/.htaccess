@@ -1,0 +1,16 @@
+# =============================================================================
+# api/.htaccess — API ディレクトリ設定
+# =============================================================================
+
+# ディレクトリ一覧禁止
+Options -Indexes
+
+# すべてのリクエストを JSON レスポンスとして処理
+<IfModule mod_headers.c>
+    Header always set Content-Type "application/json; charset=UTF-8"
+</IfModule>
+
+# 直接アクセスされた場合の CORS 設定（必要に応じて調整）
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>

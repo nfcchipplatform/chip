@@ -1,0 +1,59 @@
+# =============================================================================
+# PONNU — .gitignore
+# =============================================================================
+
+# ローカル設定ファイル（DBパスワード等の機密情報）
+app/config.php
+
+# デプロイスクリプト（FTPパスワード平文を含むため絶対にコミットしない）
+deploy.ps1
+deploy.local.ps1
+
+# 秘密情報を含む手順書（パスワードを含めて記述してしまったため除外）
+SETUP_OTHER_PC.html
+SETUP_OTHER_PC_SECRETS.md
+
+# 念のための一般パターン
+*.secret
+*.secrets
+secrets/
+*.local
+*.local.ps1
+.env
+.env.*
+!.env.example
+
+# PHP エラーログ
+logs/
+*.log
+
+# OS 生成ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / エディタ設定
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# アップロードファイル（実データ）
+public_html/uploads/*
+!public_html/uploads/.htaccess
+!public_html/uploads/.gitkeep
+
+# 一時ファイル
+tmp/
+temp/
+*.tmp
+
+# PHP パッケージマネージャ（本プロジェクトでは composer 不使用）
+vendor/
+composer.lock
+
+# Node.js（ビルドツール等を使う場合）
+node_modules/
+.env
+.env.local

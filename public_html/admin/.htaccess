@@ -1,0 +1,2 @@
+# Admin routing is intentionally unrestricted at web server level.
+# Authentication and authorization are enforced in PHP (Auth::requireRole).

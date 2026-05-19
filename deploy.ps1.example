@@ -1,0 +1,37 @@
+# PONNU FTP deploy script (template)
+# このファイルをコピーして deploy.ps1 を作成し、パスワードを記入してください
+#   copy deploy.ps1.example deploy.ps1
+# ※ deploy.ps1 は .gitignore で除外されるためコミットされません
+
+$ErrorActionPreference = 'Stop'
+$ftpHost = '<YOUR_FTP_HOST>'           # 例: ftp.example.com
+$ftpUser = '<YOUR_FTP_USER>'           # 例: date1@example.com
+$ftpPass = '<YOUR_FTP_PASSWORD>'       # ← パスワードマネージャ等から貼り付け
+$cred = "${ftpUser}:${ftpPass}"
+$localBase = 'C:/Users/matsuyama/projects/ponnu'   # ← 各PCで自分の絶対パスに変更
+
+$mappings = @(
+    @{ Local = "$localBase/app";         Remote = 'app' },
+    @{ Local = "$localBase/public_html"; Remote = 'app.ponnu.net' }
+)
+
+$total = 0; $ok = 0; $fail = 0
+foreach ($m in $mappings) {
+    $files = Get-ChildItem -Recurse -File $m.Local
+    $localPrefix = (Resolve-Path $m.Local).Path
+    foreach ($f in $files) {
+        $rel = $f.FullName.Substring($localPrefix.Length).TrimStart('\','/') -replace '\\','/'
+        $remotePath = "ftp://$ftpHost/$($m.Remote)/$rel"
+        $total++
+        $result = & curl.exe -s -S --ftp-create-dirs --user $cred -T $f.FullName $remotePath 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $ok++
+            Write-Host "[OK] $($m.Remote)/$rel"
+        } else {
+            $fail++
+            Write-Host "[FAIL] $($m.Remote)/$rel  -> $result" -ForegroundColor Red
+        }
+    }
+}
+Write-Host ""
+Write-Host "Done. total=$total ok=$ok fail=$fail"
