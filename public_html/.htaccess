@@ -1,3 +1,14 @@
+# PHP OPcache 無効化 (開発中: ファイル更新を即座に反映)
+<IfModule mod_php.c>
+    php_flag opcache.enable Off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag opcache.enable Off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag opcache.enable Off
+</IfModule>
+
 # PONNU - main .htaccess (お名前.com RS Apache 2.2/2.4 互換)
 
 Options -Indexes

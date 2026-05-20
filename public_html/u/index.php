@@ -92,6 +92,7 @@ foreach ($favorites as $fav) {
 }
 
 $avatarUrl = $targetProfile['avatar_url'] ?? null;
+$profileUrl = APP_URL . '/u/?username=' . urlencode($targetUser['username']);
 $pageTitle = e($targetUser['display_name'] ?: $targetUser['username']) . ' のプロフィール';
 ?>
 <!DOCTYPE html>
@@ -207,6 +208,26 @@ $pageTitle = e($targetUser['display_name'] ?: $targetUser['username']) . ' の�
                 </a>
             <?php endif; ?>
         </div>
+
+        <!-- 連絡先を保存 (VCard) -->
+        <div class="mt-5 pt-4 border-t border-gray-100">
+            <a href="/u/vcard.php?username=<?= urlencode($targetUser['username']) ?>"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                連絡先を保存
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== QRコード (このプロフィールのURL) ===== -->
+    <?php require_once APP_ROOT . '/Qr.php'; ?>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6 text-center">
+        <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">QR コード</h2>
+        <img src="<?= e(Qr::dataUri($profileUrl, 200)) ?>" alt="QR" class="mx-auto w-36 h-36">
+        <p class="text-xs text-gray-400 mt-3">このQRコードを読み取ると、このプロフィールにアクセスできます</p>
     </div>
 
     <!-- ===== Hamsa Hand (Top5 プレースホルダ) ===== -->

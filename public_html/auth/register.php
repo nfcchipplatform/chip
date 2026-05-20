@@ -109,7 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 Auth::login($userId);
-                redirect('/dashboard/');
+                // next パラメータが内部パスならそこへ、なければダッシュボードへ
+                $next = (string)($_GET['next'] ?? $_POST['next'] ?? '/dashboard/');
+                if (!str_starts_with($next, '/') || str_starts_with($next, '//')) {
+                    $next = '/dashboard/';
+                }
+                redirect($next);
             } catch (PDOException $e) {
                 $db->rollback();
                 error_log('[register] DB error: ' . $e->getMessage());
@@ -150,8 +155,11 @@ $pageTitle = '新規登録';
         <?php endif; ?>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <form method="post" action="/auth/register.php" novalidate>
+            <form method="post" action="/auth/register.php<?= isset($_GET['next']) ? '?next=' . urlencode((string)$_GET['next']) : '' ?>" novalidate>
                 <?php csrf_field(); ?>
+                <?php if (isset($_GET['next'])): ?>
+                  <input type="hidden" name="next" value="<?= e((string)$_GET['next']) ?>">
+                <?php endif; ?>
 
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">

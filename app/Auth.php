@@ -159,7 +159,7 @@ class Auth
         $db = Database::getInstance();
         return $db->fetchOne(
             'SELECT id, email, display_name, username, role, salon_id,
-                    direct_link_enabled, status, created_at
+                    direct_link_enabled, direct_link_url, status, created_at
              FROM users
              WHERE id = ? AND status = ?
              LIMIT 1',

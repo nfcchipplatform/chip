@@ -4,6 +4,12 @@
  * プロフィール編集: 表示名/username/title/bio/SNS/website/avatar/direct_link
  */
 declare(strict_types=1);
+
+// OPcache無効化（開発中: ファイル更新を即座に反映）
+if (function_exists('opcache_invalidate')) {
+    @opcache_invalidate(__FILE__, true);
+}
+
 require_once __DIR__ . '/../../app/bootstrap.php';
 Auth::requireLogin('/auth/login.php');
 require_once APP_ROOT . '/views/dashboard_layout.php';
@@ -363,27 +369,24 @@ $avatarUrl = $profile['avatar_url'] ?? null;
     <!-- ===== ダイレクトリンク ===== -->
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <h2 class="font-semibold text-gray-900 mb-1">ダイレクトリンク</h2>
-        <p class="text-xs text-gray-400 mb-4">有効にすると、NFCカード読み取り時にプロフィールを経由せず直接このURLに遷移します</p>
+        <p class="text-xs text-gray-400 mb-4">有効にすると、ICカード読み取り時にプロフィールを経由せず直接このURLに遷移します</p>
 
         <label class="flex items-center gap-2 cursor-pointer mb-4">
             <input type="checkbox" name="direct_link_enabled" value="1"
                    id="direct_link_enabled"
                    <?= ($user['direct_link_enabled'] ?? 0) ? 'checked' : '' ?>
-                   onchange="toggleDirectUrl(this)"
                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
             <span class="text-sm font-medium text-gray-700">ダイレクトリンクを有効にする</span>
         </label>
 
-        <div id="direct_url_field" class="<?= ($user['direct_link_enabled'] ?? 0) ? '' : 'hidden' ?>">
-            <label for="direct_link_url" class="block text-sm font-medium text-gray-700 mb-1">
-                リンク先 URL
-            </label>
-            <input type="url" id="direct_link_url" name="direct_link_url"
-                   value="<?= e($user['direct_link_url'] ?? '') ?>"
-                   placeholder="https://example.com"
-                   class="w-full px-4 py-2.5 rounded-lg border border-gray-300
-                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
-        </div>
+        <label for="direct_link_url" class="block text-sm font-medium text-gray-700 mb-1">
+            リンク先 URL
+        </label>
+        <input type="url" id="direct_link_url" name="direct_link_url"
+               value="<?= e($user['direct_link_url'] ?? '') ?>"
+               placeholder="https://example.com"
+               class="w-full px-4 py-2.5 rounded-lg border border-gray-300
+                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
     </div>
 
     <!-- ===== 保存ボタン ===== -->
@@ -417,10 +420,6 @@ function previewAvatar(input) {
         };
         reader.readAsDataURL(input.files[0]);
     }
-}
-function toggleDirectUrl(checkbox) {
-    const field = document.getElementById('direct_url_field');
-    field.classList.toggle('hidden', !checkbox.checked);
 }
 </script>
 

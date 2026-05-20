@@ -170,11 +170,8 @@ function renderInterstitial(string $destUrl, array $user): void
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center px-4">
 <div class="text-center max-w-sm">
-    <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-indigo-600 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-        </svg>
+    <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+        <img src="<?= e(ASSET_LOGO) ?>" alt="PONNU" class="w-full h-full object-contain">
     </div>
     <h1 class="text-lg font-bold text-gray-900 mb-1">
         <?= e($user['display_name'] ?: $user['username']) ?> のページへ移動します
@@ -290,7 +287,7 @@ function renderLoginPrompt(string $token): void
               hover:bg-indigo-700 transition-colors mb-3 text-sm">
         ログインして登録する
     </a>
-    <a href="/auth/register.php"
+    <a href="/auth/register.php?next=<?= urlencode('/n/?t=' . $token) ?>"
        class="block w-full py-3 border border-indigo-600 text-indigo-600 font-semibold rounded-xl
               hover:bg-indigo-50 transition-colors text-sm">
         新規登録する

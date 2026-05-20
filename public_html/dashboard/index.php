@@ -11,6 +11,17 @@ require_once APP_ROOT . '/views/dashboard_layout.php';
 $user = Auth::user();
 $db   = Database::getInstance();
 
+// ===== POST: ICカード解除 =====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && input('action') === 'unlink_nfc') {
+    Csrf::verify();
+    $nfcId = (int)input('nfc_id');
+    if ($nfcId > 0) {
+        $db->execute('UPDATE nfc_chips SET user_id = NULL WHERE id = ? AND user_id = ?', [$nfcId, $user['id']]);
+        flash_set('success', 'ICカードの紐付けを解除しました。');
+    }
+    redirect('/dashboard/');
+}
+
 // ===== 統計情報取得 =====
 
 // NFCカード一覧
@@ -59,7 +70,7 @@ dashboard_layout_start('ダッシュボード');
 <!-- 統計カード -->
 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
     <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">NFCカード</p>
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">ICカード</p>
         <p class="text-3xl font-bold text-indigo-600 mt-1"><?= count($nfcChips) ?></p>
         <p class="text-xs text-gray-400 mt-1">枚</p>
     </div>
@@ -101,10 +112,10 @@ dashboard_layout_start('ダッシュボード');
     <?php endif; ?>
 </div>
 
-<!-- NFCカード一覧 -->
+<!-- ICカード一覧 -->
 <section class="mb-8">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-gray-900">NFCカード</h2>
+        <h2 class="text-lg font-bold text-gray-900">ICカード</h2>
         <span class="text-xs text-gray-400">Step 4以降でカード管理機能を追加予定</span>
     </div>
 
@@ -127,8 +138,8 @@ dashboard_layout_start('ダッシュボード');
                     </svg>
                 </div>
             <?php endif; ?>
-            <p class="text-gray-500 text-sm">NFCカードがまだ登録されていません</p>
-            <p class="text-gray-400 text-xs mt-1">管理者にNFCカードの発行を依頼してください</p>
+            <p class="text-gray-500 text-sm">ICカードがまだ登録されていません</p>
+            <p class="text-gray-400 text-xs mt-1">管理者にICカードの発行を依頼してください</p>
         </div>
     <?php else: ?>
         <div class="space-y-3">
@@ -147,7 +158,7 @@ dashboard_layout_start('ダッシュボード');
                     <?php endif; ?>
                     <div class="flex-1 min-w-0">
                         <p class="font-medium text-gray-900 text-sm">
-                            <?= e($chip['label'] ?: 'NFCカード #' . $chip['id']) ?>
+                            <?= e($chip['label'] ?: 'ICカード #' . $chip['id']) ?>
                         </p>
                         <p class="text-xs text-gray-400 mt-0.5">
                             発行: <?= e(date('Y/m/d', strtotime($chip['issued_at']))) ?>
@@ -162,6 +173,12 @@ dashboard_layout_start('ダッシュボード');
                                     : 'bg-red-100 text-red-600' ?>">
                         <?= e($chip['status'] === 'active' ? '有効' : '無効') ?>
                     </span>
+                    <form method="post" onsubmit="return confirm('このICカードの紐付けを解除しますか？カードは未割当に戻ります。');">
+                        <?php csrf_field(); ?>
+                        <input type="hidden" name="action" value="unlink_nfc">
+                        <input type="hidden" name="nfc_id" value="<?= (int)$chip['id'] ?>">
+                        <button class="text-xs px-2 py-1 bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded transition">解除</button>
+                    </form>
                 </div>
             <?php endforeach; ?>
         </div>
