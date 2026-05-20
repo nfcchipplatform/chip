@@ -91,6 +91,29 @@ foreach ($favorites as $fav) {
     $favBySlot[(int)$fav['slot_index']] = $fav;
 }
 
+// 対象ユーザーのネイルチップ情報取得
+$targetNails = $db->fetchAll(
+    'SELECT un.finger_index, un.nail_id, n.nail_code, n.image_url, n.design_name, n.salon_id, s.name AS salon_name, n.like_count
+     FROM user_nails un
+     JOIN nails n ON n.id = un.nail_id
+     LEFT JOIN salons s ON s.id = n.salon_id
+     WHERE un.user_id = ?
+     ORDER BY un.finger_index',
+    [$targetUser['id']]
+);
+$nailsByFinger = [];
+foreach ($targetNails as $n) {
+    // 自分が「いいね」しているか
+    $n['is_liked'] = false;
+    if ($currentUser) {
+        $n['is_liked'] = (bool)$db->fetchOne(
+            'SELECT id FROM nail_likes WHERE user_id = ? AND nail_id = ? LIMIT 1',
+            [$currentUser['id'], $n['nail_id']]
+        );
+    }
+    $nailsByFinger[(int)$n['finger_index']] = $n;
+}
+
 $avatarUrl = $targetProfile['avatar_url'] ?? null;
 $profileUrl = APP_URL . '/u/?username=' . urlencode($targetUser['username']);
 $pageTitle = e($targetUser['display_name'] ?: $targetUser['username']) . ' のプロフィール';
@@ -230,69 +253,258 @@ $pageTitle = e($targetUser['display_name'] ?: $targetUser['username']) . ' の�
         <p class="text-xs text-gray-400 mt-3">このQRコードを読み取ると、このプロフィールにアクセスできます</p>
     </div>
 
-    <!-- ===== Hamsa Hand (Top5 プレースホルダ) ===== -->
+    <!-- ===== Hamsa Hand (Nail Display) ===== -->
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
         <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide text-center mb-6">
-            Top 5
+            Nails
         </h2>
 
-        <!-- 手のひら画像 + 5スロット -->
-        <div class="flex justify-center mb-4">
-            <?php if (asset_exists(ASSET_HAND_OPEN)): ?>
-                <img src="<?= e(ASSET_HAND_OPEN) ?>" alt="Hamsa Hand"
-                     class="w-48 h-auto object-contain opacity-70">
-            <?php else: ?>
-                <!-- SVGプレースホルダ: Hamsa Hand -->
-                <svg viewBox="0 0 192 240" class="w-48 h-auto text-gray-200 fill-current">
-                    <ellipse cx="96" cy="228" rx="56" ry="10"/>
-                    <rect x="88" y="32" width="20" height="100" rx="10"/>
-                    <rect x="60" y="44" width="20" height="96" rx="10"/>
-                    <rect x="32" y="64" width="20" height="84" rx="10"/>
-                    <rect x="116" y="44" width="20" height="96" rx="10"/>
-                    <rect x="144" y="72" width="18" height="72" rx="9"/>
-                    <rect x="58" y="136" width="76" height="64" rx="12"/>
-                </svg>
-            <?php endif; ?>
+        <!-- 手のひらアニメーション + 5スロット -->
+        <div id="hand-container" class="relative mx-auto mb-4 cursor-pointer" style="width:240px; height:310px; user-select:none; -webkit-tap-highlight-color:transparent;">
+            <img id="hand-open" src="<?= e(ASSET_HAND_OPEN) ?>" alt="Hand Open"
+                 class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-100">
+            <img id="hand-close" src="<?= e(ASSET_HAND_CLOSE) ?>" alt="Hand Close"
+                 class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-0">
+            <img id="hand-goo" src="<?= e(ASSET_HAND_GOO) ?>" alt="Hand Goo"
+                 class="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 opacity-0">
+
+            <!-- ネイルチップ重ね合わせ -->
+            <?php
+            // handgoo.png上の爪座標
+            $nailPositions = [
+                0 => ['top' => '51.5%', 'left' => '58.4%', 'w' => '24px', 'h' => '32px', 'rotate' => '-30deg'], // 親指
+                1 => ['top' => '38.8%', 'left' => '10.8%', 'w' => '23px', 'h' => '31px', 'rotate' => '15deg'], // 人差指
+                2 => ['top' => '35.4%', 'left' => '26.8%', 'w' => '24px', 'h' => '32px', 'rotate' => '8deg'], // 中指
+                3 => ['top' => '36.8%', 'left' => '42.8%', 'w' => '24px', 'h' => '32px', 'rotate' => '0deg'], // 薬指
+                4 => ['top' => '40%', 'left' => '55.6%', 'w' => '21px', 'h' => '28px', 'rotate' => '-8deg'], // 小指
+            ];
+            foreach ($nailPositions as $i => $pos):
+                $nail = $nailsByFinger[$i] ?? null;
+            ?>
+            <div class="nail-chip absolute opacity-0 transition-opacity duration-300 rounded-[50%_50%_45%_45%] overflow-hidden border border-gray-200 shadow-sm"
+                 style="top:<?= $pos['top'] ?>; left:<?= $pos['left'] ?>; width:<?= $pos['w'] ?>; height:<?= $pos['h'] ?>; transform:rotate(<?= $pos['rotate'] ?>);"
+                 data-nail="<?= e(json_encode($nail)) ?>"
+                 onclick="showNailModal(this, event)">
+                <?php if ($nail): ?>
+                    <img src="<?= e($nail['image_url']) ?>" alt="" class="w-full h-full object-cover">
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
         </div>
 
         <div class="flex justify-center gap-2 flex-wrap">
             <?php for ($i = 0; $i < 5; $i++):
-                $fav = $favBySlot[$i] ?? null;
+                $nail = $nailsByFinger[$i] ?? null;
             ?>
                 <div class="flex flex-col items-center gap-1">
-                    <?php if ($fav && $fav['uid']): ?>
-                        <a href="/u/?username=<?= urlencode($fav['username']) ?>" title="<?= e($fav['display_name'] ?: $fav['username']) ?>">
-                            <?php if ($fav['avatar_url'] && asset_exists($fav['avatar_url'])): ?>
-                                <img src="<?= e($fav['avatar_url']) ?>"
-                                     class="w-12 h-12 rounded-full object-cover border-2 border-indigo-300"
-                                     alt="<?= e($fav['display_name'] ?: $fav['username']) ?>">
-                            <?php else: ?>
-                                <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-300">
-                                    <span class="text-lg font-bold text-indigo-500">
-                                        <?= mb_strtoupper(mb_substr($fav['display_name'] ?: $fav['username'], 0, 1)) ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
-                        </a>
-                    <?php else: ?>
-                        <!-- Blank nail プレースホルダ -->
-                        <?php if (asset_exists(ASSET_BLANK_NAIL)): ?>
-                            <img src="<?= e(ASSET_BLANK_NAIL) ?>" class="w-12 h-12 object-contain opacity-40" alt="">
+                    <div class="w-12 h-16 rounded-[50%_50%_45%_45%] overflow-hidden border-2 <?= $nail ? 'border-indigo-300' : 'border-dashed border-gray-300' ?> flex-shrink-0 cursor-pointer"
+                         onclick="showNailModal(this, event)" data-nail="<?= e(json_encode($nail)) ?>">
+                        <?php if ($nail): ?>
+                            <img src="<?= e($nail['image_url']) ?>" class="w-full h-full object-cover" alt="">
                         <?php else: ?>
-                            <div class="w-12 h-12 rounded-full bg-gray-100 border-2 border-dashed border-gray-300"></div>
+                            <div class="w-full h-full bg-gray-50 flex items-center justify-center">
+                                <span class="text-gray-300 text-lg">+</span>
+                            </div>
                         <?php endif; ?>
-                    <?php endif; ?>
-                    <span class="text-xs text-gray-400"><?= $i + 1 ?></span>
+                    </div>
                 </div>
             <?php endfor; ?>
         </div>
-        <p class="text-center text-xs text-gray-400 mt-4">Top5インタラクションはStep 4で実装予定</p>
+        <p class="text-center text-xs text-gray-400 mt-4">タップ/長押しで爪が見えます</p>
+    </div>
+
+    <!-- ネイル詳細モーダル -->
+    <div id="nail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="relative h-64 bg-gray-100">
+                <img id="modal-nail-img" src="" class="w-full h-full object-cover">
+                <button onclick="hideNailModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center hover:bg-black/50 transition">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 id="modal-design-name" class="text-lg font-bold text-gray-900"></h3>
+                        <p id="modal-nail-code" class="text-sm font-mono text-indigo-600"></p>
+                    </div>
+                    <button id="modal-like-btn" onclick="toggleLike()" class="flex flex-col items-center gap-0.5">
+                        <svg id="modal-like-icon" class="w-7 h-7 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span id="modal-like-count" class="text-[10px] text-gray-400">0</span>
+                    </button>
+                </div>
+                
+                <p id="modal-salon" class="text-sm text-purple-600 mb-6 hidden">
+                    <svg class="w-4 h-4 inline mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <span id="modal-salon-name"></span>
+                </p>
+
+                <?php if ($currentUser): ?>
+                    <div class="space-y-3">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">自分の指に貼る</p>
+                        <div class="grid grid-cols-5 gap-2">
+                            <?php 
+                            $fingerNamesShort = ['親', '人', '中', '薬', '小'];
+                            foreach ($fingerNamesShort as $idx => $name): ?>
+                                <button onclick="applyNail(<?= $idx ?>)" class="flex flex-col items-center gap-1">
+                                    <div class="w-10 h-10 rounded-full border-2 border-indigo-100 bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs hover:bg-indigo-600 hover:text-white transition">
+                                        <?= $name ?>
+                                    </div>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <a href="/auth/login.php" class="block w-full py-3 bg-indigo-600 text-white text-center rounded-2xl font-bold hover:bg-indigo-700 transition">
+                        ログインしてこのネイルを貼る
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 
 </main>
 
-<!-- フォロー API 呼び出し -->
+<!-- スクリプト -->
 <script>
+let currentNail = null;
+
+// --- 手のアニメーション ---
+(function() {
+    const container = document.getElementById('hand-container');
+    const imgOpen  = document.getElementById('hand-open');
+    const imgClose = document.getElementById('hand-close');
+    const imgGoo   = document.getElementById('hand-goo');
+    const nailChips = document.querySelectorAll('.nail-chip');
+
+    let phase = 'open';
+
+    setTimeout(() => {
+        imgOpen.style.opacity = '0';
+        imgClose.style.opacity = '1';
+        phase = 'close';
+    }, 500);
+
+    function goGoo() {
+        if (phase === 'open') return;
+        imgClose.style.opacity = '0';
+        imgGoo.style.opacity = '1';
+        phase = 'goo';
+        nailChips.forEach(el => el.style.opacity = '1');
+    }
+
+    function goClose() {
+        imgGoo.style.opacity = '0';
+        imgClose.style.opacity = '1';
+        phase = 'close';
+        nailChips.forEach(el => el.style.opacity = '0');
+    }
+
+    container.addEventListener('mousedown', goGoo);
+    container.addEventListener('mouseup', goClose);
+    container.addEventListener('mouseleave', () => { if (phase === 'goo') goClose(); });
+    container.addEventListener('touchstart', (e) => { e.preventDefault(); goGoo(); });
+    container.addEventListener('touchend', goClose);
+    container.addEventListener('touchcancel', goClose);
+})();
+
+// --- モーダル & API ---
+function showNailModal(el, event) {
+    if (event) event.stopPropagation();
+    const data = el.dataset.nail ? JSON.parse(el.dataset.nail) : null;
+    if (!data) return;
+
+    currentNail = data;
+    document.getElementById('modal-nail-img').src = data.image_url;
+    document.getElementById('modal-design-name').textContent = data.design_name || 'ネイルデザイン';
+    document.getElementById('modal-nail-code').textContent = data.nail_code;
+    document.getElementById('modal-like-count').textContent = data.like_count || 0;
+    
+    const salonEl = document.getElementById('modal-salon');
+    if (data.salon_name) {
+        salonEl.classList.remove('hidden');
+        document.getElementById('modal-salon-name').textContent = data.salon_name;
+    } else {
+        salonEl.classList.add('hidden');
+    }
+
+    updateLikeUI(data.is_liked);
+
+    const modal = document.getElementById('nail-modal');
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.querySelector('div').classList.remove('scale-95');
+}
+
+function hideNailModal() {
+    const modal = document.getElementById('nail-modal');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    modal.querySelector('div').classList.add('scale-95');
+}
+
+function updateLikeUI(isLiked) {
+    const icon = document.getElementById('modal-like-icon');
+    if (isLiked) {
+        icon.classList.add('text-red-500', 'fill-current');
+        icon.classList.remove('text-gray-400');
+    } else {
+        icon.classList.remove('text-red-500', 'fill-current');
+        icon.classList.add('text-gray-400');
+    }
+}
+
+async function apiCall(action, params = {}) {
+    try {
+        const res = await fetch('/api/nail.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ action, ...params }),
+        });
+        return await res.json();
+    } catch (err) {
+        console.error(err);
+        return { success: false, message: '通信エラーが発生しました。' };
+    }
+}
+
+async function toggleLike() {
+    if (!currentNail) return;
+    const action = currentNail.is_liked ? 'unlike' : 'like';
+    const data = await apiCall(action, { nail_id: parseInt(currentNail.nail_id) });
+    
+    if (data.success) {
+        currentNail.is_liked = !currentNail.is_liked;
+        const countEl = document.getElementById('modal-like-count');
+        let count = parseInt(countEl.textContent);
+        count = currentNail.is_liked ? count + 1 : count - 1;
+        countEl.textContent = count;
+        updateLikeUI(currentNail.is_liked);
+    } else {
+        alert(data.message);
+    }
+}
+
+async function applyNail(fingerIndex) {
+    if (!currentNail) return;
+    const data = await apiCall('apply', {
+        nail_id: parseInt(currentNail.nail_id),
+        finger_index: fingerIndex
+    });
+    
+    if (data.success) {
+        alert('自分の指に貼りました！');
+        hideNailModal();
+    } else {
+        alert(data.message);
+    }
+}
+
 async function toggleFollow(btn) {
     const targetId  = btn.dataset.target;
     const following = btn.dataset.following === '1';

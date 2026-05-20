@@ -145,11 +145,11 @@ dashboard_layout_start('ネイル管理');
         <?php
         // handgoo.png上の爪座標 (%, 画像サイズ比で指定)
         $nailPositions = [
-            0 => ['top' => '47%', 'left' => '62%', 'w' => '38px', 'h' => '50px', 'rotate' => '-25deg'],  // 親指
-            1 => ['top' => '24%', 'left' => '6%',  'w' => '32px', 'h' => '44px', 'rotate' => '10deg'],   // 人差指
-            2 => ['top' => '22%', 'left' => '24%', 'w' => '34px', 'h' => '46px', 'rotate' => '5deg'],    // 中指
-            3 => ['top' => '24%', 'left' => '42%', 'w' => '32px', 'h' => '44px', 'rotate' => '0deg'],    // 薬指
-            4 => ['top' => '30%', 'left' => '56%', 'w' => '28px', 'h' => '38px', 'rotate' => '-5deg'],   // 小指
+            0 => ['top' => '52%', 'left' => '58%', 'w' => '30px', 'h' => '40px', 'rotate' => '-30deg'],  // 親指
+            1 => ['top' => '38%', 'left' => '8%',  'w' => '28px', 'h' => '38px', 'rotate' => '15deg'],   // 人差指(小指側)
+            2 => ['top' => '35%', 'left' => '25%', 'w' => '30px', 'h' => '40px', 'rotate' => '8deg'],    // 中指
+            3 => ['top' => '36%', 'left' => '42%', 'w' => '28px', 'h' => '38px', 'rotate' => '0deg'],    // 薬指
+            4 => ['top' => '40%', 'left' => '56%', 'w' => '24px', 'h' => '32px', 'rotate' => '-8deg'],   // 小指(親指側)
         ];
         foreach ($nailPositions as $i => $pos):
             $nail = $nailsByFinger[$i] ?? null;
