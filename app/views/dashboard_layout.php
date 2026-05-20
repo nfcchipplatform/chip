@@ -135,6 +135,7 @@ if (!function_exists('dashboard_layout_start')) {
             $navItems = [
                 ['href' => '/dashboard/',         'label' => 'ホーム',          'icon' => 'home'],
                 ['href' => '/dashboard/profile.php','label' => 'プロフィール編集', 'icon' => 'user'],
+                ['href' => '/dashboard/nails.php', 'label' => 'ネイル',          'icon' => 'sparkles'],
                 ['href' => '/dashboard/follows.php','label' => 'フォロー',        'icon' => 'users'],
                 ['href' => '/u/?username=' . urlencode($user['username'] ?? ''), 'label' => 'プロフィール表示', 'icon' => 'eye'],
             ];
