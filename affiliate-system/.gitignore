@@ -1,0 +1,19 @@
+# 環境変数（.env は git 管理外）
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# 大容量データ（ASP から取得した CSV / 生成 JSON）
+data/raw/*.csv
+data/processed/*.json
+data/processed/genres/
+
+# IDE
+.idea/
+.vscode/
