@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "source": "fanza",
+  "generated_at": "2026-06-30T03:32:20.017247+00:00",
+  "total_count": 3,
+  "products": [
+    {
+      "product_id": "abc002",
+      "title": "サンプル作品タイトル2",
+      "actress": "佐藤美咲|鈴木愛",
+      "genre": [
+        "素人",
+        "ナンパ"
+      ],
+      "thumbnail_url": "https://example.com/thumb2.jpg",
+      "affiliate_link": "https://al.fanza.co.jp/?lurl=sample2",
+      "price": 2480,
+      "release_date": "2025-02-20",
+      "intro": "",
+      "slug": "abc002",
+      "updated_at": "2026-06-30T03:32:20.017116Z"
+    },
+    {
+      "product_id": "abc003",
+      "title": "サンプル作品タイトル3",
+      "actress": "",
+      "genre": [
+        "ドキュメント"
+      ],
+      "thumbnail_url": "https://example.com/thumb3.jpg",
+      "affiliate_link": "https://al.fanza.co.jp/?lurl=sample3",
+      "price": 980,
+      "release_date": "2025-03-01",
+      "intro": "",
+      "slug": "abc003",
+      "updated_at": "2026-06-30T03:32:20.017134Z"
+    },
+    {
+      "product_id": "abc001",
+      "title": "重複テスト(上書き)",
+      "actress": "山田花子",
+      "genre": [
+        "巨乳"
+      ],
+      "thumbnail_url": "https://example.com/thumb1b.jpg",
+      "affiliate_link": "https://al.fanza.co.jp/?lurl=sample1b",
+      "price": 2180,
+      "release_date": "2025-01-20",
+      "intro": "",
+      "slug": "abc001",
+      "updated_at": "2026-06-30T03:32:20.017140Z"
+    }
+  ]
+}

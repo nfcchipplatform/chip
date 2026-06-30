@@ -1,0 +1,7 @@
+content_id,title,actress,genre,image_url,affiliate_url,price,release_date
+abc001,サンプル作品タイトル1,山田花子,巨乳/人妻,https://example.com/thumb1.jpg,https://al.fanza.co.jp/?lurl=sample1,1980,2025-01-15
+abc002,サンプル作品タイトル2,佐藤美咲|鈴木愛,素人/ナンパ,https://example.com/thumb2.jpg,https://al.fanza.co.jp/?lurl=sample2,2480,2025-02-20
+abc003,サンプル作品タイトル3,,ドキュメント,https://example.com/thumb3.jpg,https://al.fanza.co.jp/?lurl=sample3,980,2025-03-01
+abc001,重複テスト（上書き）,山田花子,巨乳,https://example.com/thumb1b.jpg,https://al.fanza.co.jp/?lurl=sample1b,2180,2025-01-20
+,タイトル欠損（除外）,テスト,ジャンル,https://example.com/x.jpg,https://al.fanza.co.jp/?lurl=invalid,1000,2025-01-01
+def004,アフィリリンク欠損（除外）,テスト,ジャンル,https://example.com/x.jpg,,1000,2025-01-01
