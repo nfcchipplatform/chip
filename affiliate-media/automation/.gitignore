@@ -1,0 +1,8 @@
+.env
+.env.local
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+data/post_history.json
+data/logs/*.log

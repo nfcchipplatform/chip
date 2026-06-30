@@ -24,14 +24,25 @@ affiliate-media/
 │   ├── src/components/          # UI コンポーネント
 │   ├── src/lib/                 # データ読み込み・Schema.org
 │   └── public/data/             # 商品 JSON（sync-data で更新）
-└── automation/                  # Phase 3: SNS Bot（未実装）
+└── automation/                  # Phase 3: X 自動投稿 Bot
+    ├── scripts/run_bot.py       # 1 回実行 CLI
+    ├── scripts/run_scheduler.py # 常駐スケジューラ
+    └── src/                     # selectors / posters / notifiers
 ```
+
+## 開発フェーズ
+
+| Phase | 内容 | 状態 |
+|-------|------|------|
+| Phase 1 | Python データ処理 | 実装済み |
+| Phase 2 | Next.js メディアサイト | 実装済み |
+| Phase 3 | X API 自動投稿 Bot | **実装済み（本 PR）** |
 
 ## FANZA アカウントについて
 
 | 用途 | 必要？ |
 |------|--------|
-| 開発・テスト（Phase 1〜2） | **不要** — サンプルデータで動作 |
+| 開発・テスト（Phase 1〜3） | **不要** — サンプルデータで動作 |
 | 本番運用・収益化 | **必要** — [DMM アフィリエイト](https://affiliate.dmm.com/) への登録 |
 
 一般の FANZA 視聴アカウントとは別です。登録手順は [docs/affiliate-setup.md](docs/affiliate-setup.md) を参照してください。
@@ -93,15 +104,29 @@ npm start
 
 ---
 
-## 開発フェーズ
+## Phase 3: X 自動投稿 Bot
 
-| Phase | 内容 | 状態 |
-|-------|------|------|
-| Phase 1 | Python データ処理 | 実装済み |
-| Phase 2 | Next.js メディアサイト | **実装済み（本 PR）** |
-| Phase 3 | X API 自動投稿 Bot | 未着手 |
+```bash
+cd affiliate-media/automation
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
 
-## 注意事項
+# ドライラン（X API 不要）
+python scripts/run_bot.py --dry-run
+
+# 本番投稿（X API 認証設定後）
+python scripts/run_bot.py
+
+# 常駐スケジューラ（3 時間ごと）
+python scripts/run_scheduler.py --interval 180
+```
+
+詳細: [automation/README.md](automation/README.md)
+
+---
+
+## FANZA アカウントについて
 
 - ASP の CSV カラム名はバージョンにより異なる場合があります。
 - OpenAI API 利用料が発生します。
