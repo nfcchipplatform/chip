@@ -1,0 +1,17 @@
+{
+  "count": 3,
+  "slugs": [
+    {
+      "slug": "fanza-abc12345-sample-title-001",
+      "id": "fanza-abc12345"
+    },
+    {
+      "slug": "fanza-abc12346-sample-title-002",
+      "id": "fanza-abc12346"
+    },
+    {
+      "slug": "fanza-abc12347-sample-title-003",
+      "id": "fanza-abc12347"
+    }
+  ]
+}

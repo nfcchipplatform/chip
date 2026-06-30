@@ -7,6 +7,8 @@ ASP（FANZA / DUGA）商品データの収集・AI 紹介文生成・メディ�
 ```
 affiliate-media/
 ├── README.md                    # 本ファイル（全体概要）
+├── docs/
+│   └── affiliate-setup.md       # ASP アカウント登録ガイド
 ├── backend/                     # Phase 1: Python データ処理
 │   ├── config/                  # 設定
 │   ├── data/
@@ -16,120 +18,91 @@ affiliate-media/
 │   │   └── samples/             # テスト用サンプル CSV
 │   ├── scripts/
 │   │   └── run_pipeline.py      # パイプライン CLI
-│   ├── src/
-│   │   ├── parsers/             # FANZA / DUGA CSV パーサー
-│   │   ├── cleaners/            # pandas クレンジング
-│   │   ├── generators/          # OpenAI 紹介文生成
-│   │   ├── exporters/           # JSON エクスポート
-│   │   ├── models/              # Pydantic データモデル
-│   │   └── utils/               # リトライ等ユーティリティ
-│   ├── requirements.txt
-│   └── .env.example
-├── frontend/                    # Phase 2: Next.js（未実装）
-│   └── (Phase 2 で追加)
+│   └── src/                     # parsers / cleaners / generators / exporters
+├── frontend/                    # Phase 2: Next.js メディアサイト
+│   ├── src/app/                 # App Router（SSG/ISR）
+│   ├── src/components/          # UI コンポーネント
+│   ├── src/lib/                 # データ読み込み・Schema.org
+│   └── public/data/             # 商品 JSON（sync-data で更新）
 └── automation/                  # Phase 3: SNS Bot（未実装）
-    └── (Phase 3 で追加)
 ```
+
+## FANZA アカウントについて
+
+| 用途 | 必要？ |
+|------|--------|
+| 開発・テスト（Phase 1〜2） | **不要** — サンプルデータで動作 |
+| 本番運用・収益化 | **必要** — [DMM アフィリエイト](https://affiliate.dmm.com/) への登録 |
+
+一般の FANZA 視聴アカウントとは別です。登録手順は [docs/affiliate-setup.md](docs/affiliate-setup.md) を参照してください。
+
+---
 
 ## Phase 1: データ収集とコンテンツ自動生成
 
-### セットアップ
-
 ```bash
 cd affiliate-media/backend
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# .env に OPENAI_API_KEY を設定
-```
 
-### 実行方法
-
-**FANZA CSV（紹介文生成なし・テスト）**
-
-```bash
 python scripts/run_pipeline.py \
   --source fanza \
   --input data/samples/fanza_sample.csv \
   --skip-generation
 ```
 
-**FANZA CSV（OpenAI 紹介文生成あり）**
+---
+
+## Phase 2: Next.js メディアサイト
+
+### セットアップ
 
 ```bash
-python scripts/run_pipeline.py \
-  --source fanza \
-  --input data/raw/fanza_products.csv \
-  --chunk-size 10000
+cd affiliate-media/frontend
+npm install
+cp .env.example .env.local
+npm run sync-data   # backend の JSON を public/data/ にコピー
+npm run dev         # http://localhost:3000
 ```
 
-**DUGA CSV**
+### 本番ビルド
 
 ```bash
-python scripts/run_pipeline.py \
-  --source duga \
-  --input data/raw/duga_products.csv
+npm run sync-data
+npm run build
+npm start
 ```
 
-### CLI オプション
+### 実装内容
 
-| オプション | 説明 |
-|-----------|------|
-| `--source` | `fanza` または `duga` |
-| `--input` | 入力 CSV パス |
-| `--output-dir` | JSON 出力先（省略時: `data/processed`） |
-| `--limit` | 処理件数上限（テスト用） |
-| `--chunk-size` | 大容量 CSV チャンクサイズ（デフォルト: 10000） |
-| `--skip-generation` | OpenAI 紹介文生成をスキップ |
-| `--no-checkpoint` | チェックポイント無効化 |
+- **App Router + ISR** — `revalidate: 3600`（1 時間ごとに再生成）
+- **作品詳細ページ** — `/products/[slug]`
+- **ジャンル一覧** — `/genres` / `/genres/[genre]`
+- **モバイル CVR 最適化** — 固定 CTA バー、オレンジグラデーションボタン
+- **SEO** — 動的 `sitemap.xml`、`robots.txt`、Schema.org（Product / BreadcrumbList / WebSite）
+- **OGP / Twitter Card** — 作品ページごとにメタデータ生成
 
-### 出力 JSON
+### 環境変数
 
-| ファイル | 用途 |
-|---------|------|
-| `products.json` | 全商品データ（Phase 2 が読み込む） |
-| `products_by_genre.json` | ジャンル別インデックス |
-| `index.json` | 一覧ページ用軽量インデックス |
-| `slugs.json` | 動的ルーティング用 slug 一覧 |
+| 変数 | 説明 |
+|------|------|
+| `NEXT_PUBLIC_SITE_URL` | 本番 URL（sitemap / canonical） |
+| `NEXT_PUBLIC_SITE_NAME` | サイト名 |
+| `PRODUCTS_DATA_DIR` | JSON 読み込みパス（省略可） |
 
-### 商品データスキーマ
-
-```json
-{
-  "id": "fanza-abc12345",
-  "source": "fanza",
-  "title": "作品タイトル",
-  "actresses": ["女優A", "女優B"],
-  "genres": ["ドラマ", "人妻"],
-  "thumbnail_url": "https://...",
-  "affiliate_url": "https://...",
-  "price": 1980,
-  "release_date": "2025-01-15",
-  "description": "ASP 提供の説明文",
-  "intro_text": "OpenAI 生成の紹介文（200文字程度）",
-  "slug": "fanza-abc12345-sample-title-001",
-  "updated_at": "2025-06-30T12:00:00"
-}
-```
-
-## 非機能要件
-
-- **レートリミット**: OpenAI API 呼び出しに指数バックオフ + RPM スロットリング
-- **大容量対応**: pandas チャンク読み込み（数十万件 CSV 対応）
-- **中断再開**: チェックポイント JSONL による紹介文生成の再開
-- **モジュール分割**: parsers / cleaners / generators / exporters
+---
 
 ## 開発フェーズ
 
 | Phase | 内容 | 状態 |
 |-------|------|------|
-| Phase 1 | Python データ処理 | **実装済み（本 PR）** |
-| Phase 2 | Next.js メディアサイト | 承認後に着手 |
-| Phase 3 | X API 自動投稿 Bot | Phase 2 後 |
+| Phase 1 | Python データ処理 | 実装済み |
+| Phase 2 | Next.js メディアサイト | **実装済み（本 PR）** |
+| Phase 3 | X API 自動投稿 Bot | 未着手 |
 
 ## 注意事項
 
-- ASP の CSV カラム名はバージョンにより異なる場合があります。`src/parsers/fanza.py` / `duga.py` の `COLUMN_ALIASES` を実際の CSV に合わせて調整してください。
-- OpenAI API 利用料が発生します。本番前に `--limit` で小さく試してください。
+- ASP の CSV カラム名はバージョンにより異なる場合があります。
+- OpenAI API 利用料が発生します。
 - アフィリエイトリンク・コンテンツは各 ASP の利用規約を遵守してください。

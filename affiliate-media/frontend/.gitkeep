@@ -1,7 +1,0 @@
-# Phase 2: Next.js メディアサイト
-
-Phase 1 の承認後に実装します。
-
-- App Router + SSG/ISR
-- Tailwind CSS
-- 動的 sitemap / Schema.org 構造化データ
