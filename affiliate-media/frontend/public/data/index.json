@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-06-30T03:32:46.099835",
+  "count": 3,
+  "items": [
+    {
+      "id": "fanza-abc12345",
+      "slug": "fanza-abc12345-sample-title-001",
+      "title": "Sample Title 001",
+      "genres": [
+        "ドラマ",
+        "人妻"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample001.jpg",
+      "intro_text": null
+    },
+    {
+      "id": "fanza-abc12346",
+      "slug": "fanza-abc12346-sample-title-002",
+      "title": "Sample Title 002",
+      "genres": [
+        "単体作品",
+        "巨乳"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample002.jpg",
+      "intro_text": null
+    },
+    {
+      "id": "fanza-abc12347",
+      "slug": "fanza-abc12347-sample-title-003",
+      "title": "Sample Title 003",
+      "genres": [
+        "VR",
+        "ハイビジョン"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample003.jpg",
+      "intro_text": null
+    }
+  ]
+}
