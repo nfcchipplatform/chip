@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-06-30T03:32:46.099264",
+  "count": 3,
+  "products": [
+    {
+      "id": "fanza-abc12345",
+      "source": "fanza",
+      "title": "Sample Title 001",
+      "actresses": [
+        "Sample Actress A",
+        "Sample Actress B"
+      ],
+      "genres": [
+        "ドラマ",
+        "人妻"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample001.jpg",
+      "affiliate_url": "https://al.fanza.co.jp/?lurl=sample001&af_id=xxxx",
+      "price": 1980,
+      "release_date": "2025-01-15",
+      "description": "Sample description for product 001.",
+      "intro_text": null,
+      "slug": "fanza-abc12345-sample-title-001",
+      "updated_at": "2026-06-30T03:32:46.098683"
+    },
+    {
+      "id": "fanza-abc12346",
+      "source": "fanza",
+      "title": "Sample Title 002",
+      "actresses": [
+        "Sample Actress C"
+      ],
+      "genres": [
+        "単体作品",
+        "巨乳"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample002.jpg",
+      "affiliate_url": "https://al.fanza.co.jp/?lurl=sample002&af_id=xxxx",
+      "price": 2480,
+      "release_date": "2025-02-01",
+      "description": "Sample description for product 002.",
+      "intro_text": null,
+      "slug": "fanza-abc12346-sample-title-002",
+      "updated_at": "2026-06-30T03:32:46.098805"
+    },
+    {
+      "id": "fanza-abc12347",
+      "source": "fanza",
+      "title": "Sample Title 003",
+      "actresses": [
+        "Sample Actress D"
+      ],
+      "genres": [
+        "VR",
+        "ハイビジョン"
+      ],
+      "thumbnail_url": "https://pics.dmm.co.jp/sample/sample003.jpg",
+      "affiliate_url": "https://al.fanza.co.jp/?lurl=sample003&af_id=xxxx",
+      "price": 980,
+      "release_date": "2025-03-10",
+      "description": null,
+      "intro_text": null,
+      "slug": "fanza-abc12347-sample-title-003",
+      "updated_at": "2026-06-30T03:32:46.098906"
+    }
+  ]
+}
